@@ -1,0 +1,183 @@
+---
+title: "Project 5 - Descriptive data analysis"
+author: "Aleksandra Buchowicz"
+date: "2024-01-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+```
+
+# Loading the data
+
+```{r data_head}
+data <- read.csv('data_project_5_for_students.csv')
+head(data)
+```
+
+# Basic statistics
+
+```{r data_summary}
+summary(data)
+```
+
+```{r tables, echo=FALSE}
+for (col in colnames(data)){
+  print(table(data[,col], useNA="always"))
+}
+```
+
+# Distributions of data among CFS and control groups
+
+```{r group_hist, echo = FALSE}
+library(patchwork)
+
+p1 <- ggplot(data, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes among both groups")
+
+```
+
+## CFS group
+
+```{r cfs_tables, echo=FALSE}
+print("### Chronic Fatigue Syndrome ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='CFS',col], useNA="always"))
+}
+```
+```{r cfs_hist, echo = FALSE}
+library(patchwork)
+data_cfs <- data[data$Group=='CFS',]
+
+p1 <- ggplot(data_cfs, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_cfs, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_cfs, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_cfs, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_cfs, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "CFS Group")
+
+```
+
+## Healthy control group
+
+```{r hc_tables, echo=FALSE}
+print("### Healthy Control ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='HC',col], useNA="always"))
+}
+```
+
+```{r hc_hist, echo = FALSE}
+library(patchwork)
+data_hc <- data[data$Group=='HC',]
+
+p1 <- ggplot(data_hc, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_hc, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_hc, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_hc, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_hc, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation("Healthy Control")
+
+```
+
+# Distributions of data between genders
+
+```{r gender_tables, echo=FALSE}
+print("### Females ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='f',col], useNA="always"))
+}
+
+print("### Males ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='m',col], useNA="always"))
+}
+```
+
+```{r f_hist, echo = FALSE}
+library(patchwork)
+data_f <- data[data$Gender=='f',]
+
+p1 <- ggplot(data_f, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_f, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_f, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_f, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_f, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in females")
+
+```
+
+```{r m_hist, echo = FALSE}
+library(patchwork)
+data_m <- data[data$Gender=='m',]
+
+p1 <- ggplot(data_m, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_m, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_m, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_m, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_m, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in males")
+
+```
