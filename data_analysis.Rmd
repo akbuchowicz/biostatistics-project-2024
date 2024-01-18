@@ -1,6 +1,6 @@
 ---
 title: "Project 5 - Descriptive data analysis"
-author: "Aleksandra Buchowicz"
+author: "Aleksandra Buchowicz, Michał Klimek, Marcin Ostrowski"
 date: "2024-01-11"
 output: html_document
 ---
