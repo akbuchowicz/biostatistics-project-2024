@@ -1,0 +1,335 @@
+---
+title: "Project 5"
+author: "Aleksandra Buchowicz, Michał Klimek, Marcin Ostrowski"
+date: "2024-01-11"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+
+library(ggplot2)
+library(patchwork)
+```
+
+# Loading the data
+
+```{r data_head}
+data <- read.csv('data_project_5_for_students.csv')
+head(data)
+```
+
+# Basic statistics
+First, let's get a basic data summary.
+
+```{r data_summary}
+summary(data)
+```
+We can create tables to see, what values are in each column.
+
+```{r tables, echo=FALSE}
+for (col in colnames(data)){
+  print(table(data[,col], useNA="always"))
+}
+```
+
+We can see that there is some missing data in the dataset. The total number of missing data instances in the entire data set:
+
+```{r nas}
+sum(is.na(data))
+```
+We have also created plots to summarize distributions of data in each column.
+
+```{r plot_all}
+p00 <- ggplot(data, aes(x=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p0 <- ggplot(data, aes(x=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p1 <- ggplot(data, aes(x=rs2476601)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data, aes(x=rs3087243)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data, aes(x=rs3807306)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data, aes(x=rs1800629)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data, aes(x=rs1799724)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p00+ p0 + p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distributions of each column in the dataset")
+```
+# Distributions of data among CFS and control groups
+
+```{r group_hist, echo = FALSE}
+
+p1 <- ggplot(data, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes among both groups")
+
+```
+
+## CFS group
+
+```{r cfs_tables, echo=FALSE}
+print("### Chronic Fatigue Syndrome ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='CFS',col], useNA="always"))
+}
+```
+```{r cfs_hist, echo = FALSE}
+library(patchwork)
+data_cfs <- data[data$Group=='CFS',]
+
+p1 <- ggplot(data_cfs, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_cfs, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_cfs, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_cfs, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_cfs, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "CFS Group")
+
+```
+
+## Healthy control group
+
+```{r hc_tables, echo=FALSE}
+print("### Healthy Control ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='HC',col], useNA="always"))
+}
+```
+
+```{r hc_hist, echo = FALSE}
+library(patchwork)
+data_hc <- data[data$Group=='HC',]
+
+p1 <- ggplot(data_hc, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_hc, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_hc, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_hc, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_hc, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation("Healthy Control")
+
+```
+
+# Distributions of data between genders
+
+## Distribution of genes in females
+
+```{r female_tables, echo=FALSE}
+print("### Females ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='f',col], useNA="always"))
+}
+```
+
+```{r f_hist, echo = FALSE}
+library(patchwork)
+data_f <- data[data$Gender=='f',]
+
+p1 <- ggplot(data_f, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_f, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_f, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_f, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_f, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in females")
+
+```
+
+## Distribution of genes in males
+
+```{r male_tables}
+print("### Males ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='m',col], useNA="always"))
+}
+```
+
+
+```{r m_hist, echo = FALSE}
+library(patchwork)
+data_m <- data[data$Gender=='m',]
+
+p1 <- ggplot(data_m, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_m, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_m, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_m, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_m, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in males")
+
+```
+
+# Distributions of genetic markers in healthy patients
+
+Information about the the respective genetic information and the allele distribution of different populations comes from the 1000 Human Genome Project. We have retrieved the information with the use of ensembl.org.
+
+The information about the genetic markers will be presented using the VCF format: `(CHROM POS ID REF ALT)`, where:
+* `CHROM` - chromosome identifier
+* `POS` - reference position
+* `ID` - genetic marker identifier
+* `REF` - reference base(s) 
+* `ALT` - alternative base(s)
+
+
+## rs2476601
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=1:113834446-113835446;v=rs2476601;vdb=variation;vf=166892
+
+VCF: `1  113834946  rs2476601  A  G,T` 
+
+```{r rs2476601_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+A_freq <- c(0.027, 0.003, 0.036, 0.000, 0.094, 0.013)
+G_freq <- c(0.973, 0.997, 0.964,  1.000, 0.906, 0.987)
+
+AA_freq <- c(0.001 , 0.00, 0.003 ,  0.000, 0.004 , 0.00)
+AG_freq <- c(0.052 , 0.006 , 0.066 ,  0.000, 0.181 , 0.027)
+GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
+
+data.rs2476601 <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs2476601)
+```
+## rs3087243
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
+
+VCF: `2  203874196  rs3087243  G  A,T` 
+
+```{r rs3087243_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+A_freq <- c(0.369 , 0.176 , 0.380 , 0.263 , 0.470 , 0.627)
+G_freq <- 1.00 - A_freq
+
+GG_freq <- c(0.421, 0.670, 0.372,  0.548, 0.274, 0.139)
+AA_freq <- c(0.159, 0.023, 0.133,  0.073, 0.215, 0.393)
+AG_freq <- c(0.420, 0.307, 0.496,  0.379, 0.511, 0.468 )
+
+data.rs3087243 <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs3087243)
+```
+
+## rs3807306
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
+
+VCF: `7  128940626  rs3807306  G  A,C,T` 
+
+```{r rs3807306_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+G_freq <- c(0.654 , 0.703 , 0.663 , 0.847 , 0.487, 0.553)
+T_freq <- 1.00 - G_freq
+
+GG_freq <- c(0.450, 0.498, 0.458,  0.726, 0.225, 0.325)
+GT_freq <- c(0.409, 0.411, 0.409,  0.242, 0.525, 0.456)
+TT_freq <- c(0.142, 0.091, 0.133,  0.032, 0.250, 0.219)
+
+data.rs3807306 <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_freq)
+print(data.rs3807306)
+```
+
+## rs1800629
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=6:31574754-31575754;v=rs1800629;vdb=variation;vf=406243482
+
+VCF: `6  31575254  rs1800629  G  A` 
+
+```{r rs1800629_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+G_freq <- c(0.910  , 0.880  , 0.931  , 0.941  , 0.866 , 0.947 )
+A_freq <- 1.00 - G_freq
+
+GG_freq <- c(0.827, 0.773, 0.867,  0.885, 0.744, 0.898)
+AA_freq <- c(0.008, 0.012, 0.006,  0.002, 0.012, 0.004)
+AG_freq <- c(0.165, 0.215, 0.127,  0.113, 0.245, 0.098)
+
+data.rs1800629 <- data.frame(region, G_freq, T_freq)
+print(data.rs1800629)
+```
+
+## rs1799724
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Explore?db=core;r=6:31574205-31575205;v=rs1799724;vdb=variation;vf=406243312
+
+VCF: `6  31574705  rs1799724  C  T` 
+
+```{r rs1799724_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+C_freq <- c(0.901   , 0.976   , 0.817   , 0.875   , 0.906  , 0.881  )
+T_freq <- 1.00 - C_freq
+
+CC_freq <- c(0.814 , 0.953 , 0.657 ,  0.770 , 0.821 , 0.775 )
+CT_freq <- c(0.174 , 0.045 , 0.320 ,  0.210 , 0.169 , 0.213 )
+TT_freq <- c(0.012 , 0.002 , 0.023 ,  0.020 , 0.010 , 0.012 )
+
+data.rs1799724 <- data.frame(region, C_freq, T_freq, CC_freq, CT_freq, TT_freq)
+print(data.rs1799724)
+```
