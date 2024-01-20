@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 library(ggplot2)
 library(patchwork)
+library(tidyr)
 ```
 
 # Loading the data
@@ -227,7 +228,8 @@ p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in males
 
 Information about the the respective genetic information and the allele distribution of different populations comes from the 1000 Human Genome Project. We have retrieved the information with the use of ensembl.org.
 
-The information about the genetic markers will be presented using the VCF format: `(CHROM POS ID REF ALT)`, where:
+The information about the genetic markers will be presented using the VCF format: `(CHROM POS ID REF ALT)`, where:\newline
+
 * `CHROM` - chromosome identifier
 * `POS` - reference position
 * `ID` - genetic marker identifier
@@ -251,8 +253,8 @@ AA_freq <- c(0.001 , 0.00, 0.003 ,  0.000, 0.004 , 0.00)
 AG_freq <- c(0.052 , 0.006 , 0.066 ,  0.000, 0.181 , 0.027)
 GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
 
-data.rs2476601 <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
-print(data.rs2476601)
+data.rs2476601.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs2476601.rep)
 ```
 ## rs3087243
 
@@ -270,8 +272,8 @@ GG_freq <- c(0.421, 0.670, 0.372,  0.548, 0.274, 0.139)
 AA_freq <- c(0.159, 0.023, 0.133,  0.073, 0.215, 0.393)
 AG_freq <- c(0.420, 0.307, 0.496,  0.379, 0.511, 0.468 )
 
-data.rs3087243 <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
-print(data.rs3087243)
+data.rs3087243.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs3087243.rep)
 ```
 
 ## rs3807306
@@ -290,8 +292,8 @@ GG_freq <- c(0.450, 0.498, 0.458,  0.726, 0.225, 0.325)
 GT_freq <- c(0.409, 0.411, 0.409,  0.242, 0.525, 0.456)
 TT_freq <- c(0.142, 0.091, 0.133,  0.032, 0.250, 0.219)
 
-data.rs3807306 <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_freq)
-print(data.rs3807306)
+data.rs3807306.rep <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_freq)
+print(data.rs3807306.rep)
 ```
 
 ## rs1800629
@@ -310,8 +312,8 @@ GG_freq <- c(0.827, 0.773, 0.867,  0.885, 0.744, 0.898)
 AA_freq <- c(0.008, 0.012, 0.006,  0.002, 0.012, 0.004)
 AG_freq <- c(0.165, 0.215, 0.127,  0.113, 0.245, 0.098)
 
-data.rs1800629 <- data.frame(region, G_freq, T_freq)
-print(data.rs1800629)
+data.rs1800629.rep <- data.frame(region, G_freq, A_freq, GG_freq, AA_freq, AG_freq)
+print(data.rs1800629.rep)
 ```
 
 ## rs1799724
@@ -330,6 +332,201 @@ CC_freq <- c(0.814 , 0.953 , 0.657 ,  0.770 , 0.821 , 0.775 )
 CT_freq <- c(0.174 , 0.045 , 0.320 ,  0.210 , 0.169 , 0.213 )
 TT_freq <- c(0.012 , 0.002 , 0.023 ,  0.020 , 0.010 , 0.012 )
 
-data.rs1799724 <- data.frame(region, C_freq, T_freq, CC_freq, CT_freq, TT_freq)
-print(data.rs1799724)
+data.rs1799724.rep <- data.frame(region, C_freq, T_freq, CC_freq, CT_freq, TT_freq)
+print(data.rs1799724.rep)
+```
+
+# Estimated distributions of genetic markers in healthy patients
+
+In the beginning we have to prepare data. We are filtering data to get data about healthy patients and then remove missing data.
+```{r}
+data_HC <- data[data$Group == 'HC', ]
+head(data_HC)
+
+sum(is.na(data_HC)) 
+
+data_HC <- na.omit(data_HC)
+sum(is.na(data_HC))
+
+dim(data_HC) 
+```
+
+Now we are going to create new variable for each allele and calculate distribution of them. Then we compare results with distributions from repository.
+
+## rs2476601
+```{r}
+data.rs2476601 <- data_HC$rs2476601
+unique(data.rs2476601)
+
+table.rs2476601 <- table(data.rs2476601)
+num.alleles.rs2476601 <- 2 * sum(table.rs2476601)
+numA.alleles.rs2476601 <- sum(data.rs2476601=='AG')
+
+proportion.allelesA.rs2476601 <- numA.alleles.rs2476601/num.alleles.rs2476601
+
+proportion.rs2476601 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs2476601,
+  G_freq = 1 - proportion.allelesA.rs2476601
+)
+
+proportion.rs2476601
+```
+```{r}
+data.plot <- rbind(data.rs2476601.rep[, c("region", "A_freq", "G_freq")], proportion.rs2476601)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  ylab("data origin")+
+  theme_minimal()
+rs2476601.plot
+```
+
+
+## rs3087243
+
+```{r}
+data.rs3087243 <- data_HC$rs3087243
+unique(data.rs3087243)
+
+table.rs3087243 <- table(data.rs3087243)
+num.alleles.rs3087243 <- 2 * sum(table.rs3087243)
+
+
+numA.alleles.rs3087243 <- sum(data.rs3087243 == 'AA' | data.rs3087243 == 'AG')
+
+proportion.allelesA.rs3087243 <- numA.alleles.rs3087243/num.alleles.rs3087243
+
+proportion.rs3087243 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs3087243,
+  G_freq = 1 - proportion.allelesA.rs3087243
+)
+
+proportion.rs3087243
+```
+
+```{r}
+data.plot <- rbind(data.rs3087243.rep[, c("region", "A_freq", "G_freq")], proportion.rs3087243)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  ylab("data origin")+
+  theme_minimal()
+  
+rs3087243.plot
+```
+
+## rs3807306
+
+```{r}
+data.rs3807306 <- data_HC$rs3807306
+unique(data.rs3807306)
+
+table.rs3807306 <- table(data.rs3807306)
+num.alleles.rs3807306 <- 2 * sum(table.rs3807306)
+
+
+numT.alleles.rs3807306 <- sum(data.rs3807306 == 'GT' | data.rs3807306 == 'TT')
+
+proportion.allelesT.rs3807306 <- numT.alleles.rs3807306/num.alleles.rs3807306
+
+proportion.rs3807306 <- data.frame(
+  region = "sample",
+  T_freq = proportion.allelesT.rs3807306,
+  G_freq = 1 - proportion.allelesT.rs3807306
+)
+
+proportion.rs3807306
+```
+```{r}
+data.plot <- rbind(data.rs3807306.rep[, c("region", "T_freq", "G_freq")], proportion.rs3807306)
+
+data.plot <- pivot_longer(data.plot, T_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("T", "G"))+
+  ylab("data origin")+
+  theme_minimal()
+  
+rs3807306.plot
+```
+
+
+## rs1800629
+```{r}
+data.rs1800629 <- data_HC$rs1800629
+unique(data.rs1800629)
+
+table.rs1800629 <- table(data.rs1800629)
+num.alleles.rs1800629 <- 2 * sum(table.rs1800629)
+
+
+numA.alleles.rs1800629 <- sum(data.rs1800629 == 'AG' | data.rs1800629 == 'AA')
+
+proportion.allelesA.rs1800629 <- numA.alleles.rs1800629/num.alleles.rs1800629
+
+proportion.rs1800629 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs1800629,
+  G_freq = 1 - proportion.allelesA.rs1800629
+)
+
+proportion.rs1800629
+```
+```{r}
+data.plot <- rbind(data.rs1800629.rep[, c("region", "A_freq", "G_freq")], proportion.rs1800629)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  ylab("data origin")+
+  theme_minimal()
+  
+rs1800629.plot
+```
+
+## rs1799724
+```{r}
+data.rs1799724 <- data_HC$rs1799724
+unique(data.rs1799724)
+
+table.rs1799724 <- table(data.rs1799724)
+num.alleles.rs1799724 <- 2 * sum(table.rs1799724)
+
+
+numT.alleles.rs1799724 <- sum(data.rs1799724 == 'CT' | data.rs1799724 == 'TT')
+
+proportion.allelesT.rs1799724 <- numT.alleles.rs1799724/num.alleles.rs1799724
+
+proportion.rs1799724 <- data.frame(
+  region = "sample",
+  T_freq = proportion.allelesT.rs1799724,
+  C_freq = 1 - proportion.allelesT.rs1799724
+)
+
+proportion.rs1799724
+```
+
+```{r}
+data.plot <- rbind(data.rs1799724.rep[, c("region", "T_freq", "C_freq")], proportion.rs1799724)
+
+data.plot <- pivot_longer(data.plot, T_freq:C_freq, values_to = "frequency", names_to = "allel")
+
+rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("C", "T"))+
+  ylab("data origin")+
+  theme_minimal()
+  
+rs1799724.plot
 ```
