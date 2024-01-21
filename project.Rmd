@@ -2,7 +2,9 @@
 title: "Project 5"
 author: "Aleksandra Buchowicz, Michał Klimek, Marcin Ostrowski"
 date: "2024-01-11"
-output: slidy_presentation
+output:
+  slidy_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 library(ggplot2)
 library(patchwork)
 library(tidyr)
+library(glmnet)
+library(pROC)
 ```
 
 # Loading the data
@@ -531,136 +535,149 @@ rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs1799724.plot
 ```
 
-# Genotype distribution for HC group
-From previous slide we know amount of each genotype (got it from `table` function). Now
-we are going to calculate frequencies of each genotype and then compare it with expectations from
-the Hardy-Weinberg Equilibrium using chi-square test.
+# Genotype Distribution Between CFS and HC
+
+To test if the genotype distribution between CFS and HC is significantly different we used the Chi-Squared test and the Fisher's exact test. According to https://www.ccjm.org/content/84/9_suppl_2/e20 if substantial (above 20%) of expected cell counts is less than 5, the Fisher's exact test should be used.
 
 ## rs2476601
-
 ```{r}
-freq.rs2476601 <- prop.table(table.rs2476601)
-freq.rs2476601["AA"] <- 0.
+p.values <- c()
 
-freq.rs2476601
-theo.prob.rs2476601 <- c(proportion.allelesA.rs2476601^2, 2*proportion.allelesA.rs2476601*(1-proportion.allelesA.rs2476601),(1-proportion.allelesA.rs2476601)^2)
-theo.prob.rs2476601 <- theo.prob.rs2476601[c(2,3,1)] # sorting
-theo.prob.rs2476601
+contingency_table <- table(data$Group, data$rs2476601)
+contingency_table
+fisher_test_result <- fisher.test(contingency_table)
+fisher_test_result
 
-table.rs2476601["AA"] <- 0.
-chisq.test(x=table.rs2476601, p=theo.prob.rs2476601)
-
+p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
 ## rs3087243
 ```{r}
-freq.rs3087243 <- prop.table(table.rs3087243)
-freq.rs3087243
-theo.prob.rs3087243 <- c(proportion.allelesA.rs3087243^2, 2*proportion.allelesA.rs3087243*(1-proportion.allelesA.rs3087243),(1-proportion.allelesA.rs3087243)^2)
-theo.prob.rs3087243
-chisq.test(x=table.rs3087243, p=theo.prob.rs3087243)
+contingency_table <- table(data$Group, data$rs3087243)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
 ```
 
 ## rs3807306
 ```{r}
-freq.rs3807306 <- prop.table(table.rs3807306)
-freq.rs3807306
-theo.prob.rs3807306 <- c(proportion.allelesT.rs3807306^2, 2*proportion.allelesT.rs3807306*(1-proportion.allelesT.rs3807306),(1-proportion.allelesT.rs3807306)^2)
-theo.prob.rs3807306
-chisq.test(x=table.rs3807306, p=theo.prob.rs3807306)
+contingency_table <- table(data$Group, data$rs3807306)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
 ```
 
 ## rs1800629
 ```{r}
-freq.rs1800629 <- prop.table(table.rs1800629)
-freq.rs1800629
-theo.prob.rs1800629 <- c(proportion.allelesA.rs1800629^2, 2*proportion.allelesA.rs1800629*(1-proportion.allelesA.rs1800629),(1-proportion.allelesA.rs1800629)^2)
-theo.prob.rs1800629
-chisq.test(x=table.rs1800629, p=theo.prob.rs1800629)
+contingency_table <- table(data$Group, data$rs1800629)
+contingency_table
+fisher_test_result <- fisher.test(contingency_table)
+fisher_test_result
+
+p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
 ## rs1799724
 ```{r}
-freq.rs1799724 <- prop.table(table.rs1799724)
-freq.rs1799724
-theo.prob.rs1799724 <- c(proportion.allelesT.rs1799724^2, 2*proportion.allelesT.rs1799724*(1-proportion.allelesT.rs1799724),(1-proportion.allelesT.rs1799724)^2)
-theo.prob.rs1799724 <- theo.prob.rs1799724[c(3,2,1)] # sorting
-theo.prob.rs1799724
-chisq.test(x=table.rs1799724, p=theo.prob.rs1799724)
+contingency_table <- table(data$Group, data$rs1799724)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-# Genotype distribution for CFS group
-
-In the beginning we delete na values from CFS group.
+## Bonferroni's Correction
+Now we can apply the Bonferroni's correction to adjust the p-values.
 ```{r}
-data_cfs <- na.omit(data_cfs)
+adjusted_p_values <- p.adjust(p.values, method = "bonferroni")
+adjusted_p_values
+
+
+gene_names <- c("rs2476601", "rs3087243", "rs3807306", "rs1800629", "rs1799724")
+tests_used <- c("Fisher's Exact Test", "Chi-squared Test", "Chi-squared Test", "Fisher's Exact Test", "Chi-squared Test")
+
+result_table <- data.frame(
+  Genetic_Marker = gene_names,
+  Test_Used = tests_used,
+  P_Value = p.values,
+  Adjusted_P_Value = adjusted_p_values
+)
+
+result_table
 ```
+As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype deistributions between the groups.
+
+# Creating models
+
+Next, we created models using "Group" as the outcome variable and adjusting for 'Gender'. 
 
 ## rs2476601
-
-
 ```{r}
-freq.rs2476601.cfs <- table(data_cfs$rs2476601) / sum(table(data_cfs$rs2476601))
-freq.rs2476601.cfs
+new_data <- na.omit(data)
+new_data$Group_binary <- as.factor(ifelse(new_data$Group == "CFS", 1, 0))
 
-proportion.allelesA.rs2476601.cfs <- sum(data_cfs$rs2476601=='AA' | data_cfs$rs2476601=='AG') / (2 * sum(table(data_cfs$rs247660)))
-
-theo.prob.rs2476601.cfs <- c(proportion.allelesA.rs2476601.cfs^2, 2*proportion.allelesA.rs2476601.cfs*(1-proportion.allelesA.rs2476601.cfs),
-                             (1-proportion.allelesA.rs2476601.cfs)^2)
-theo.prob.rs2476601.cfs
-chisq.test(x=table(data_cfs$rs2476601), p=theo.prob.rs2476601.cfs)
+mod.rs2476601 <- glm(new_data$Group_binary~new_data$rs2476601+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs2476601)
 ```
 
 ## rs3087243
 ```{r}
-freq.rs3087243.cfs <- table(data_cfs$rs3087243) / sum(table(data_cfs$rs3087243))
-freq.rs3087243.cfs
-
-proportion.allelesA.rs3087243.cfs <- sum(data_cfs$rs3087243=='AA' | data_cfs$rs3087243=='AG') / (2 * sum(table(data_cfs$rs247660)))
-
-theo.prob.rs3087243.cfs <- c(proportion.allelesA.rs3087243.cfs^2, 2*proportion.allelesA.rs3087243.cfs*(1-proportion.allelesA.rs3087243.cfs),
-                             (1-proportion.allelesA.rs3087243.cfs)^2)
-theo.prob.rs3087243.cfs <- theo.prob.rs3087243.cfs[c(1,3,2)] # soriting
-theo.prob.rs3087243.cfs
-chisq.test(x=table(data_cfs$rs3087243), p=theo.prob.rs3087243.cfs)
+mod.rs3087243 <- glm(new_data$Group_binary~new_data$rs3087243+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs3087243)
 ```
 
 ## rs3807306
 ```{r}
-freq.rs3807306.cfs <- table(data_cfs$rs3807306) / sum(table(data_cfs$rs3807306))
-freq.rs3807306.cfs
-
-proportion.allelesT.rs3807306.cfs <- sum(data_cfs$rs3807306=='GT' | data_cfs$rs3807306=='TT') / (2 * sum(table(data_cfs$rs3807306)))
-
-theo.prob.rs3807306.cfs <- c(proportion.allelesT.rs3807306.cfs^2, 2*proportion.allelesT.rs3807306.cfs*(1-proportion.allelesT.rs3807306.cfs),
-                             (1-proportion.allelesT.rs3807306.cfs)^2)
-theo.prob.rs3807306.cfs
-chisq.test(x=table(data_cfs$rs3807306), p=theo.prob.rs3807306.cfs)
+mod.rs3807306 <- glm(new_data$Group_binary~new_data$rs3807306+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs3807306)
 ```
 
 ## rs1800629
 ```{r}
-freq.rs1800629.cfs <- table(data_cfs$rs1800629) / sum(table(data_cfs$rs1800629))
-freq.rs1800629.cfs
-
-proportion.allelesA.rs1800629.cfs <- sum(data_cfs$rs1800629=='AA' | data_cfs$rs1800629=='AG') / (2 * sum(table(data_cfs$rs1800629)))
-
-theo.prob.rs1800629.cfs <- c(proportion.allelesA.rs1800629.cfs^2, 2*proportion.allelesA.rs1800629.cfs*(1-proportion.allelesA.rs1800629.cfs),
-                             (1-proportion.allelesA.rs1800629.cfs)^2)
-theo.prob.rs1800629.cfs
-chisq.test(x=table(data_cfs$rs1800629), p=theo.prob.rs1800629.cfs)
+mod.rs1800629 <- glm(new_data$Group_binary~new_data$rs1800629+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs1800629)
 ```
 
 ## rs1799724
 ```{r}
-freq.rs1799724.cfs <- table(data_cfs$rs1799724) / sum(table(data_cfs$rs1799724))
-freq.rs1799724.cfs
-
-proportion.allelesT.rs1799724.cfs <- sum(data_cfs$rs1799724=='CT' | data_cfs$rs1799724=='TT') / (2 * sum(table(data_cfs$rs1799724)))
-
-theo.prob.rs1799724.cfs <- c(proportion.allelesT.rs1799724.cfs^2, 2*proportion.allelesT.rs1799724.cfs*(1-proportion.allelesT.rs1799724.cfs),
-                             (1-proportion.allelesT.rs1799724.cfs)^2)
-theo.prob.rs1799724.cfs <- theo.prob.rs1799724.cfs[c(3,2,1)]
-theo.prob.rs1799724.cfs
-chisq.test(x=table(data_cfs$rs1799724), p=theo.prob.rs1799724.cfs)
+mod.rs1799724 <- glm(new_data$Group_binary~new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs1799724)
 ```
+
+## Full Model
+```{r}
+mod.full <- glm(Group_binary~., family=binomial(link='probit'),data=subset(new_data, select = -Group))
+summary(mod.full)
+```
+
+## Empty Model
+```{r}
+mod.null <- glm(Group_binary~1, family=binomial(link='probit'),data=subset(new_data, select = -Group))
+summary(mod.null)
+```
+
+## Combined Model
+```{r}
+mod.new <- glm(new_data$Group_binary~new_data$rs3087243+new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
+summary(mod.new)
+```
+
+## Accuracy
+```{r}
+predictions <- predict(mod.new, newdata = new_data, type = "response")
+predicted_labels <- ifelse(predictions > 0.5, 1, 0)
+accuracy <- mean(predicted_labels == new_data$Group_binary)
+accuracy
+
+roc_curve <- roc(new_data$Group_binary, predictions)
+plot(roc_curve, main = "ROC Curve", col = "blue", lwd = 2)
+
+auc_value <- auc(roc(new_data$Group_binary, predictions))
+auc_value
+```
+Performance of the model is mediocre.  
