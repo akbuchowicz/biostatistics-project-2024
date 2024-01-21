@@ -3,8 +3,8 @@ title: "Project 5"
 author: "Aleksandra Buchowicz, Michał Klimek, Marcin Ostrowski"
 date: "2024-01-11"
 output:
-  slidy_presentation: default
   beamer_presentation: default
+  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -241,7 +241,7 @@ The information about the genetic markers will be presented using the VCF format
 * `ALT` - alternative base(s)
 
 
-## rs2476601
+# rs2476601
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=1:113834446-113835446;v=rs2476601;vdb=variation;vf=166892
@@ -260,7 +260,7 @@ GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
 data.rs2476601.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
 print(data.rs2476601.rep)
 ```
-## rs3087243
+# rs3087243
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
@@ -280,7 +280,7 @@ data.rs3087243.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_fr
 print(data.rs3087243.rep)
 ```
 
-## rs3807306
+# rs3807306
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
@@ -300,7 +300,7 @@ data.rs3807306.rep <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_fr
 print(data.rs3807306.rep)
 ```
 
-## rs1800629
+# rs1800629
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=6:31574754-31575754;v=rs1800629;vdb=variation;vf=406243482
@@ -320,7 +320,7 @@ data.rs1800629.rep <- data.frame(region, G_freq, A_freq, GG_freq, AA_freq, AG_fr
 print(data.rs1800629.rep)
 ```
 
-## rs1799724
+# rs1799724
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Explore?db=core;r=6:31574205-31575205;v=rs1799724;vdb=variation;vf=406243312
@@ -357,7 +357,7 @@ dim(data_HC)
 
 Now we are going to create new variable for each allele and calculate distribution of them. Then we compare results with distributions from repository.
 
-## rs2476601
+# rs2476601
 ```{r}
 data.rs2476601 <- data_HC$rs2476601
 unique(data.rs2476601)
@@ -390,7 +390,7 @@ rs2476601.plot
 ```
 
 
-## rs3087243
+# rs3087243
 
 ```{r}
 data.rs3087243 <- data_HC$rs3087243
@@ -427,7 +427,7 @@ rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs3087243.plot
 ```
 
-## rs3807306
+# rs3807306
 
 ```{r}
 data.rs3807306 <- data_HC$rs3807306
@@ -464,7 +464,7 @@ rs3807306.plot
 ```
 
 
-## rs1800629
+# rs1800629
 ```{r}
 data.rs1800629 <- data_HC$rs1800629
 unique(data.rs1800629)
@@ -499,7 +499,7 @@ rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs1800629.plot
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
 data.rs1799724 <- data_HC$rs1799724
 unique(data.rs1799724)
@@ -551,7 +551,7 @@ fisher_test_result
 p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
-## rs3087243
+# rs3087243
 ```{r}
 contingency_table <- table(data$Group, data$rs3087243)
 contingency_table
@@ -561,7 +561,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## rs3807306
+# rs3807306
 ```{r}
 contingency_table <- table(data$Group, data$rs3807306)
 contingency_table
@@ -571,7 +571,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## rs1800629
+# rs1800629
 ```{r}
 contingency_table <- table(data$Group, data$rs1800629)
 contingency_table
@@ -581,7 +581,7 @@ fisher_test_result
 p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
 contingency_table <- table(data$Group, data$rs1799724)
 contingency_table
@@ -591,7 +591,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## Bonferroni's Correction
+# Bonferroni's Correction
 Now we can apply the Bonferroni's correction to adjust the p-values.
 ```{r}
 adjusted_p_values <- p.adjust(p.values, method = "bonferroni")
@@ -610,7 +610,7 @@ result_table <- data.frame(
 
 result_table
 ```
-As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype deistributions between the groups.
+As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype distributions between the groups.
 
 # Creating models
 
@@ -625,49 +625,49 @@ mod.rs2476601 <- glm(new_data$Group_binary~new_data$rs2476601+new_data$Gender, f
 summary(mod.rs2476601)
 ```
 
-## rs3087243
+# rs3087243
 ```{r}
 mod.rs3087243 <- glm(new_data$Group_binary~new_data$rs3087243+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs3087243)
 ```
 
-## rs3807306
+# rs3807306
 ```{r}
 mod.rs3807306 <- glm(new_data$Group_binary~new_data$rs3807306+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs3807306)
 ```
 
-## rs1800629
+# rs1800629
 ```{r}
 mod.rs1800629 <- glm(new_data$Group_binary~new_data$rs1800629+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs1800629)
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
 mod.rs1799724 <- glm(new_data$Group_binary~new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs1799724)
 ```
 
-## Full Model
+# Full Model
 ```{r}
 mod.full <- glm(Group_binary~., family=binomial(link='probit'),data=subset(new_data, select = -Group))
 summary(mod.full)
 ```
 
-## Empty Model
+# Empty Model
 ```{r}
 mod.null <- glm(Group_binary~1, family=binomial(link='probit'),data=subset(new_data, select = -Group))
 summary(mod.null)
 ```
 
-## Combined Model
+# Combined Model
 ```{r}
 mod.new <- glm(new_data$Group_binary~new_data$rs3087243+new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
 summary(mod.new)
 ```
 
-## Accuracy
+# Accuracy
 ```{r}
 predictions <- predict(mod.new, newdata = new_data, type = "response")
 predicted_labels <- ifelse(predictions > 0.5, 1, 0)
