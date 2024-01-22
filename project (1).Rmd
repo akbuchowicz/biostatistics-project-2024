@@ -1,0 +1,894 @@
+---
+title: "Project 5"
+author: "Aleksandra Buchowicz, Michał Klimek, Marcin Ostrowski"
+date: "2024-01-11"
+output:
+  slidy_presentation: default
+  beamer_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+
+library(ggplot2)
+library(patchwork)
+library(tidyr)
+library(glmnet)
+library(pROC)
+```
+
+# Loading the data
+
+```{r data_head}
+data <- read.csv('data_project_5_for_students.csv')
+head(data)
+```
+
+# Basic statistics
+First, let's get a basic data summary.
+
+```{r data_summary}
+summary(data)
+```
+We can create tables to see, what values are in each column.
+
+```{r tables, echo=FALSE}
+for (col in colnames(data)){
+  print(table(data[,col], useNA="always"))
+}
+```
+
+We can see that there is some missing data in the dataset. The total number of missing data instances in the entire data set:
+
+```{r nas}
+sum(is.na(data))
+```
+We have also created plots to summarize distributions of data in each column.
+
+```{r plot_all}
+p00 <- ggplot(data, aes(x=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p0 <- ggplot(data, aes(x=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p1 <- ggplot(data, aes(x=rs2476601)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data, aes(x=rs3087243)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data, aes(x=rs3807306)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data, aes(x=rs1800629)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data, aes(x=rs1799724)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p00+ p0 + p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distributions of each column in the dataset")
+```
+
+# Distributions of data among CFS and control groups
+
+```{r group_hist, echo = FALSE}
+
+p1 <- ggplot(data, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes among both groups")
+
+```
+
+## CFS group
+
+```{r cfs_tables, echo=FALSE}
+print("### Chronic Fatigue Syndrome ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='CFS',col], useNA="always"))
+}
+```
+```{r cfs_hist, echo = FALSE}
+library(patchwork)
+data_cfs <- data[data$Group=='CFS',]
+
+p1 <- ggplot(data_cfs, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_cfs, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_cfs, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_cfs, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_cfs, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "CFS Group")
+
+```
+
+## Healthy control group
+
+```{r hc_tables, echo=FALSE}
+print("### Healthy Control ###")
+for (col in colnames(data)[colnames(data)!="Group"]){
+  print(table(data[data$Group=='HC',col], useNA="always"))
+}
+```
+
+```{r hc_hist, echo = FALSE}
+library(patchwork)
+data_hc <- data[data$Group=='HC',]
+
+p1 <- ggplot(data_hc, aes(x=rs2476601, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_hc, aes(x=rs3087243, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_hc, aes(x=rs3807306, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_hc, aes(x=rs1800629, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_hc, aes(x=rs1799724, fill=Gender)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation("Healthy Control")
+
+```
+
+# Distributions of data between genders
+
+## Distribution of genes in females
+
+```{r female_tables, echo=FALSE}
+print("### Females ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='f',col], useNA="always"))
+}
+```
+
+```{r f_hist, echo = FALSE}
+library(patchwork)
+data_f <- data[data$Gender=='f',]
+
+p1 <- ggplot(data_f, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_f, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_f, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_f, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_f, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in females")
+
+```
+
+## Distribution of genes in males
+
+```{r male_tables}
+print("### Males ###")
+for (col in colnames(data)[colnames(data)!="Gender"]){
+  print(table(data[data$Gender=='m',col], useNA="always"))
+}
+```
+
+
+```{r m_hist, echo = FALSE}
+library(patchwork)
+data_m <- data[data$Gender=='m',]
+
+p1 <- ggplot(data_m, aes(x=rs2476601, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p2 <- ggplot(data_m, aes(x=rs3087243, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p3 <- ggplot(data_m, aes(x=rs3807306, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p4 <- ggplot(data_m, aes(x=rs1800629, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+p5 <- ggplot(data_m, aes(x=rs1799724, fill=Group)) +
+  geom_bar(stat="count", width=0.7)+
+  theme_minimal()
+
+p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distribution of genes in males")
+
+```
+
+# Distributions of genetic markers in healthy patients
+
+Information about the the respective genetic information and the allele distribution of different populations comes from the 1000 Human Genome Project. We have retrieved the information with the use of ensembl.org.
+
+The information about the genetic markers will be presented using the VCF format: `(CHROM POS ID REF ALT)`, where:\newline
+
+* `CHROM` - chromosome identifier
+* `POS` - reference position
+* `ID` - genetic marker identifier
+* `REF` - reference base(s) 
+* `ALT` - alternative base(s)
+
+
+# rs2476601
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=1:113834446-113835446;v=rs2476601;vdb=variation;vf=166892
+
+VCF: `1  113834946  rs2476601  A  G,T` 
+
+```{r rs2476601_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+A_freq <- c(0.027, 0.003, 0.036, 0.000, 0.094, 0.013)
+G_freq <- c(0.973, 0.997, 0.964,  1.000, 0.906, 0.987)
+
+AA_freq <- c(0.001 , 0.00, 0.003 ,  0.000, 0.004 , 0.00)
+AG_freq <- c(0.052 , 0.006 , 0.066 ,  0.000, 0.181 , 0.027)
+GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
+
+data.rs2476601.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs2476601.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs2476601.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+
+rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs2476601.plot
+```
+
+# rs3087243
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
+
+VCF: `2  203874196  rs3087243  G  A,T` 
+
+```{r rs3087243_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+A_freq <- c(0.369 , 0.176 , 0.380 , 0.263 , 0.470 , 0.627)
+G_freq <- 1.00 - A_freq
+
+GG_freq <- c(0.421, 0.670, 0.372,  0.548, 0.274, 0.139)
+AA_freq <- c(0.159, 0.023, 0.133,  0.073, 0.215, 0.393)
+AG_freq <- c(0.420, 0.307, 0.496,  0.379, 0.511, 0.468 )
+
+data.rs3087243.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
+print(data.rs3087243.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs3087243.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+
+rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3087243.plot
+```
+
+# rs3807306
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
+
+VCF: `7  128940626  rs3807306  G  A,C,T` 
+
+```{r rs3807306_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+G_freq <- c(0.654 , 0.703 , 0.663 , 0.847 , 0.487, 0.553)
+T_freq <- 1.00 - G_freq
+
+GG_freq <- c(0.450, 0.498, 0.458,  0.726, 0.225, 0.325)
+GT_freq <- c(0.409, 0.411, 0.409,  0.242, 0.525, 0.456)
+TT_freq <- c(0.142, 0.091, 0.133,  0.032, 0.250, 0.219)
+
+data.rs3807306.rep <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_freq)
+print(data.rs3807306.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs3807306.rep[, c("region", "GG_freq", "GT_freq", "TT_freq")]
+
+data.plot <- pivot_longer(data.plot, c("GG_freq", "GT_freq", "TT_freq"), values_to = "frequency", names_to = "allel")
+
+rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("GG", "GT", "TT"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3807306.plot
+```
+
+
+
+# rs1800629
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=6:31574754-31575754;v=rs1800629;vdb=variation;vf=406243482
+
+VCF: `6  31575254  rs1800629  G  A` 
+
+```{r rs1800629_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+G_freq <- c(0.910  , 0.880  , 0.931  , 0.941  , 0.866 , 0.947 )
+A_freq <- 1.00 - G_freq
+
+GG_freq <- c(0.827, 0.773, 0.867,  0.885, 0.744, 0.898)
+AA_freq <- c(0.008, 0.012, 0.006,  0.002, 0.012, 0.004)
+AG_freq <- c(0.165, 0.215, 0.127,  0.113, 0.245, 0.098)
+
+data.rs1800629.rep <- data.frame(region, G_freq, A_freq, GG_freq, AA_freq, AG_freq)
+print(data.rs1800629.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs1800629.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+
+rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1800629.plot
+```
+
+# rs1799724
+
+The information about this genetic marker can be found here: 
+https://www.ensembl.org/Homo_sapiens/Variation/Explore?db=core;r=6:31574205-31575205;v=rs1799724;vdb=variation;vf=406243312
+
+VCF: `6  31574705  rs1799724  C  T` 
+
+```{r rs1799724_data, echo=FALSE}
+region <- c("ALL", "AFR", "AMR", "EAS", "EUR", "SAS")
+C_freq <- c(0.901   , 0.976   , 0.817   , 0.875   , 0.906  , 0.881  )
+T_freq <- 1.00 - C_freq
+
+CC_freq <- c(0.814 , 0.953 , 0.657 ,  0.770 , 0.821 , 0.775 )
+CT_freq <- c(0.174 , 0.045 , 0.320 ,  0.210 , 0.169 , 0.213 )
+TT_freq <- c(0.012 , 0.002 , 0.023 ,  0.020 , 0.010 , 0.012 )
+
+data.rs1799724.rep <- data.frame(region, C_freq, T_freq, CC_freq, CT_freq, TT_freq)
+print(data.rs1799724.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs1799724.rep[, c("region", "CC_freq", "CT_freq", "TT_freq")]
+
+data.plot <- pivot_longer(data.plot, c("CC_freq", "CT_freq", "TT_freq"), values_to = "frequency", names_to = "allel")
+
+rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("CC", "CT", "TT"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1799724.plot
+```
+
+# Estimated distributions of genetic markers in healthy patients
+
+In the beginning we have to prepare data. We are filtering data to get data about healthy patients and then remove missing data.
+```{r}
+data_HC <- data[data$Group == 'HC', ]
+head(data_HC)
+
+sum(is.na(data_HC)) 
+
+data_HC <- na.omit(data_HC)
+sum(is.na(data_HC))
+
+dim(data_HC) 
+```
+
+Now we are going to create new variable for each allele and calculate distribution of them. Then we compare results with distributions from repository.
+
+# rs2476601
+```{r}
+data.rs2476601 <- data_HC$rs2476601
+unique(data.rs2476601)
+
+table.rs2476601 <- table(data.rs2476601)
+num.alleles.rs2476601 <- 2 * sum(table.rs2476601)
+numA.alleles.rs2476601 <- sum(data.rs2476601=='AG')
+
+proportion.allelesA.rs2476601 <- numA.alleles.rs2476601/num.alleles.rs2476601
+
+proportion.rs2476601 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs2476601,
+  G_freq = 1 - proportion.allelesA.rs2476601
+)
+
+proportion.rs2476601
+```
+```{r}
+data.plot <- rbind(data.rs2476601.rep[, c("region", "A_freq", "G_freq")], proportion.rs2476601)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  xlab("data origin")+
+  theme_minimal()
+rs2476601.plot
+```
+
+
+# rs3087243
+
+```{r}
+data.rs3087243 <- data_HC$rs3087243
+unique(data.rs3087243)
+
+table.rs3087243 <- table(data.rs3087243)
+num.alleles.rs3087243 <- 2 * sum(table.rs3087243)
+
+
+numA.alleles.rs3087243 <- sum(data.rs3087243 == 'AA' | data.rs3087243 == 'AG')
+
+proportion.allelesA.rs3087243 <- numA.alleles.rs3087243/num.alleles.rs3087243
+
+proportion.rs3087243 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs3087243,
+  G_freq = 1 - proportion.allelesA.rs3087243
+)
+
+proportion.rs3087243
+```
+
+```{r}
+data.plot <- rbind(data.rs3087243.rep[, c("region", "A_freq", "G_freq")], proportion.rs3087243)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3087243.plot
+```
+
+# rs3807306
+
+```{r}
+data.rs3807306 <- data_HC$rs3807306
+unique(data.rs3807306)
+
+table.rs3807306 <- table(data.rs3807306)
+num.alleles.rs3807306 <- 2 * sum(table.rs3807306)
+
+
+numT.alleles.rs3807306 <- sum(data.rs3807306 == 'GT' | data.rs3807306 == 'TT')
+
+proportion.allelesT.rs3807306 <- numT.alleles.rs3807306/num.alleles.rs3807306
+
+proportion.rs3807306 <- data.frame(
+  region = "sample",
+  T_freq = proportion.allelesT.rs3807306,
+  G_freq = 1 - proportion.allelesT.rs3807306
+)
+
+proportion.rs3807306
+```
+```{r}
+data.plot <- rbind(data.rs3807306.rep[, c("region", "T_freq", "G_freq")], proportion.rs3807306)
+
+data.plot <- pivot_longer(data.plot, T_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("T", "G"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3807306.plot
+```
+
+
+# rs1800629
+```{r}
+data.rs1800629 <- data_HC$rs1800629
+unique(data.rs1800629)
+
+table.rs1800629 <- table(data.rs1800629)
+num.alleles.rs1800629 <- 2 * sum(table.rs1800629)
+
+
+numA.alleles.rs1800629 <- sum(data.rs1800629 == 'AG' | data.rs1800629 == 'AA')
+
+proportion.allelesA.rs1800629 <- numA.alleles.rs1800629/num.alleles.rs1800629
+
+proportion.rs1800629 <- data.frame(
+  region = "sample",
+  A_freq = proportion.allelesA.rs1800629,
+  G_freq = 1 - proportion.allelesA.rs1800629
+)
+
+proportion.rs1800629
+```
+```{r}
+data.plot <- rbind(data.rs1800629.rep[, c("region", "A_freq", "G_freq")], proportion.rs1800629)
+
+data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", names_to = "allel")
+
+rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("A", "G"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1800629.plot
+```
+
+# rs1799724
+```{r}
+data.rs1799724 <- data_HC$rs1799724
+unique(data.rs1799724)
+
+table.rs1799724 <- table(data.rs1799724)
+num.alleles.rs1799724 <- 2 * sum(table.rs1799724)
+
+
+numT.alleles.rs1799724 <- sum(data.rs1799724 == 'CT' | data.rs1799724 == 'TT')
+
+proportion.allelesT.rs1799724 <- numT.alleles.rs1799724/num.alleles.rs1799724
+
+proportion.rs1799724 <- data.frame(
+  region = "sample",
+  T_freq = proportion.allelesT.rs1799724,
+  C_freq = 1 - proportion.allelesT.rs1799724
+)
+
+proportion.rs1799724
+```
+
+```{r}
+data.plot <- rbind(data.rs1799724.rep[, c("region", "T_freq", "C_freq")], proportion.rs1799724)
+
+data.plot <- pivot_longer(data.plot, T_freq:C_freq, values_to = "frequency", names_to = "allel")
+
+rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("C", "T"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1799724.plot
+```
+
+# Genotype distribution for HC group
+From previous slide we know amount of each genotype (got it from table function). Now
+we are going to calculate frequencies of each genotype and then compare it with expectations from
+the Hardy-Weinberg Equilibrium using chi-square test.
+
+## rs2476601
+
+```{r}
+freq.rs2476601 <- prop.table(table.rs2476601)
+freq.rs2476601["AA"] <- 0.
+
+freq.rs2476601
+theo.prob.rs2476601 <- c(proportion.allelesA.rs2476601^2, 2*proportion.allelesA.rs2476601*(1-proportion.allelesA.rs2476601),(1-proportion.allelesA.rs2476601)^2)
+theo.prob.rs2476601 <- theo.prob.rs2476601[c(2,3,1)] # sorting
+theo.prob.rs2476601
+
+table.rs2476601["AA"] <- 0.
+chisq.test(x=table.rs2476601, p=theo.prob.rs2476601)
+```
+
+## rs3087243
+```{r}
+freq.rs3087243 <- prop.table(table.rs3087243)
+freq.rs3087243
+theo.prob.rs3087243 <- c(proportion.allelesA.rs3087243^2, 2*proportion.allelesA.rs3087243*(1-proportion.allelesA.rs3087243),(1-proportion.allelesA.rs3087243)^2)
+theo.prob.rs3087243
+chisq.test(x=table.rs3087243, p=theo.prob.rs3087243)
+```
+
+## rs3807306
+```{r}
+freq.rs3807306 <- prop.table(table.rs3807306)
+freq.rs3807306
+theo.prob.rs3807306 <- c(proportion.allelesT.rs3807306^2, 2*proportion.allelesT.rs3807306*(1-proportion.allelesT.rs3807306),(1-proportion.allelesT.rs3807306)^2)
+theo.prob.rs3807306
+chisq.test(x=table.rs3807306, p=theo.prob.rs3807306)
+```
+
+## rs1800629
+```{r}
+freq.rs1800629 <- prop.table(table.rs1800629)
+freq.rs1800629
+theo.prob.rs1800629 <- c(proportion.allelesA.rs1800629^2, 2*proportion.allelesA.rs1800629*(1-proportion.allelesA.rs1800629),(1-proportion.allelesA.rs1800629)^2)
+theo.prob.rs1800629
+chisq.test(x=table.rs1800629, p=theo.prob.rs1800629)
+```
+
+## rs1799724
+```{r}
+freq.rs1799724 <- prop.table(table.rs1799724)
+freq.rs1799724
+theo.prob.rs1799724 <- c(proportion.allelesT.rs1799724^2, 2*proportion.allelesT.rs1799724*(1-proportion.allelesT.rs1799724),(1-proportion.allelesT.rs1799724)^2)
+theo.prob.rs1799724 <- theo.prob.rs1799724[c(3,2,1)] # sorting
+theo.prob.rs1799724
+chisq.test(x=table.rs1799724, p=theo.prob.rs1799724)
+```
+
+# Genotype distribution for CFS group
+
+In the beginning we delete na values from CFS group.
+```{r}
+data_cfs <- na.omit(data_cfs)
+```
+
+## rs2476601
+
+```{r}
+freq.rs2476601.cfs <- table(data_cfs$rs2476601) / sum(table(data_cfs$rs2476601))
+freq.rs2476601.cfs
+
+proportion.allelesA.rs2476601.cfs <- sum(data_cfs$rs2476601=='AA' | data_cfs$rs2476601=='AG') / (2 * sum(table(data_cfs$rs247660)))
+
+theo.prob.rs2476601.cfs <- c(proportion.allelesA.rs2476601.cfs^2, 2*proportion.allelesA.rs2476601.cfs*(1-proportion.allelesA.rs2476601.cfs),
+                             (1-proportion.allelesA.rs2476601.cfs)^2)
+theo.prob.rs2476601.cfs
+chisq.test(x=table(data_cfs$rs2476601), p=theo.prob.rs2476601.cfs)
+```
+
+## rs3087243
+```{r}
+freq.rs3087243.cfs <- table(data_cfs$rs3087243) / sum(table(data_cfs$rs3087243))
+freq.rs3087243.cfs
+
+proportion.allelesA.rs3087243.cfs <- sum(data_cfs$rs3087243=='AA' | data_cfs$rs3087243=='AG') / (2 * sum(table(data_cfs$rs247660)))
+
+theo.prob.rs3087243.cfs <- c(proportion.allelesA.rs3087243.cfs^2, 2*proportion.allelesA.rs3087243.cfs*(1-proportion.allelesA.rs3087243.cfs),
+                             (1-proportion.allelesA.rs3087243.cfs)^2)
+theo.prob.rs3087243.cfs <- theo.prob.rs3087243.cfs[c(1,3,2)] # soriting
+theo.prob.rs3087243.cfs
+chisq.test(x=table(data_cfs$rs3087243), p=theo.prob.rs3087243.cfs)
+```
+
+## rs3807306
+```{r}
+freq.rs3807306.cfs <- table(data_cfs$rs3807306) / sum(table(data_cfs$rs3807306))
+freq.rs3807306.cfs
+
+proportion.allelesT.rs3807306.cfs <- sum(data_cfs$rs3807306=='GT' | data_cfs$rs3807306=='TT') / (2 * sum(table(data_cfs$rs3807306)))
+
+theo.prob.rs3807306.cfs <- c(proportion.allelesT.rs3807306.cfs^2, 2*proportion.allelesT.rs3807306.cfs*(1-proportion.allelesT.rs3807306.cfs),
+                             (1-proportion.allelesT.rs3807306.cfs)^2)
+theo.prob.rs3807306.cfs
+chisq.test(x=table(data_cfs$rs3807306), p=theo.prob.rs3807306.cfs)
+```
+
+## rs1800629
+```{r}
+freq.rs1800629.cfs <- table(data_cfs$rs1800629) / sum(table(data_cfs$rs1800629))
+freq.rs1800629.cfs
+
+proportion.allelesA.rs1800629.cfs <- sum(data_cfs$rs1800629=='AA' | data_cfs$rs1800629=='AG') / (2 * sum(table(data_cfs$rs1800629)))
+
+theo.prob.rs1800629.cfs <- c(proportion.allelesA.rs1800629.cfs^2, 2*proportion.allelesA.rs1800629.cfs*(1-proportion.allelesA.rs1800629.cfs),
+                             (1-proportion.allelesA.rs1800629.cfs)^2)
+theo.prob.rs1800629.cfs
+chisq.test(x=table(data_cfs$rs1800629), p=theo.prob.rs1800629.cfs)
+```
+
+## rs1799724
+```{r}
+freq.rs1799724.cfs <- table(data_cfs$rs1799724) / sum(table(data_cfs$rs1799724))
+freq.rs1799724.cfs
+
+proportion.allelesT.rs1799724.cfs <- sum(data_cfs$rs1799724=='CT' | data_cfs$rs1799724=='TT') / (2 * sum(table(data_cfs$rs1799724)))
+
+theo.prob.rs1799724.cfs <- c(proportion.allelesT.rs1799724.cfs^2, 2*proportion.allelesT.rs1799724.cfs*(1-proportion.allelesT.rs1799724.cfs),
+                             (1-proportion.allelesT.rs1799724.cfs)^2)
+theo.prob.rs1799724.cfs <- theo.prob.rs1799724.cfs[c(3,2,1)]
+theo.prob.rs1799724.cfs
+chisq.test(x=table(data_cfs$rs1799724), p=theo.prob.rs1799724.cfs)
+```
+
+# Genotype Distribution Between CFS and HC
+
+To test if the genotype distribution between CFS and HC is significantly different we used the Chi-Squared test and the Fisher's exact test. According to https://www.ccjm.org/content/84/9_suppl_2/e20 if substantial (above 20%) of expected cell counts is less than 5, the Fisher's exact test should be used.
+
+## rs2476601
+```{r}
+p.values <- c()
+
+contingency_table <- table(data$Group, data$rs2476601)
+contingency_table
+fisher_test_result <- fisher.test(contingency_table)
+fisher_test_result
+
+p.values <- c(p.values,fisher_test_result$p.value)
+```
+
+# rs3087243
+```{r}
+contingency_table <- table(data$Group, data$rs3087243)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
+```
+
+# rs3807306
+```{r}
+contingency_table <- table(data$Group, data$rs3807306)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
+```
+
+# rs1800629
+```{r}
+contingency_table <- table(data$Group, data$rs1800629)
+contingency_table
+fisher_test_result <- fisher.test(contingency_table)
+fisher_test_result
+
+p.values <- c(p.values,fisher_test_result$p.value)
+```
+
+# rs1799724
+```{r}
+contingency_table <- table(data$Group, data$rs1799724)
+contingency_table
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
+
+p.values <- c(p.values,chi_square_result$p.value)
+```
+
+# Bonferroni's Correction
+Now we can apply the Bonferroni's correction to adjust the p-values.
+```{r}
+adjusted_p_values <- p.adjust(p.values, method = "bonferroni")
+adjusted_p_values
+
+
+gene_names <- c("rs2476601", "rs3087243", "rs3807306", "rs1800629", "rs1799724")
+tests_used <- c("Fisher's Exact Test", "Chi-squared Test", "Chi-squared Test", "Fisher's Exact Test", "Chi-squared Test")
+
+result_table <- data.frame(
+  Genetic_Marker = gene_names,
+  Test_Used = tests_used,
+  P_Value = p.values,
+  Adjusted_P_Value = adjusted_p_values
+)
+
+result_table
+```
+As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype distributions between the groups.
+
+# Creating models
+
+Next, we created models using "Group" as the outcome variable and adjusting for 'Gender'. 
+
+## rs2476601
+```{r}
+new_data <- na.omit(data)
+new_data$Group_binary <- as.factor(ifelse(new_data$Group == "CFS", 1, 0))
+
+new_data$rs2476601 <- ifelse(new_data$rs2476601 == "GG", 2, ifelse(new_data$rs2476601=='AG',1,0))
+mod.rs2476601 <- glm(new_data$Group_binary~new_data$rs2476601+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs2476601)
+```
+
+# rs3087243
+```{r}
+new_data$rs3087243 <- ifelse(new_data$rs3087243 == "GG", 2, ifelse(new_data$rs3087243=='AG',1,0))
+mod.rs3087243 <- glm(new_data$Group_binary~new_data$rs3087243+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs3087243)
+```
+
+# rs3807306
+```{r}
+new_data$rs3807306 <- ifelse(new_data$rs3807306 == "GG", 2, ifelse(new_data$rs3807306=='GT',1,0))
+mod.rs3807306 <- glm(new_data$Group_binary~new_data$rs3807306+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs3807306)
+```
+
+# rs1800629
+```{r}
+new_data$rs1800629 <- ifelse(new_data$rs1800629 == "GG", 2, ifelse(new_data$rs1800629=='AG',1,0))
+mod.rs1800629 <- glm(new_data$Group_binary~new_data$rs1800629+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs1800629)
+```
+
+# rs1799724
+```{r}
+new_data$rs1799724 <- ifelse(new_data$rs1799724 == "CC", 2, ifelse(new_data$rs1799724=='CT',1,0))
+mod.rs1799724 <- glm(new_data$Group_binary~new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
+summary(mod.rs1799724)
+```
+
+# Full Model
+```{r}
+mod.full <- glm(Group_binary~., family=binomial(link='probit'),data=subset(new_data, select = -Group))
+summary(mod.full)
+```
+
+# Empty Model
+```{r}
+mod.null <- glm(Group_binary~1, family=binomial(link='probit'),data=subset(new_data, select = -Group))
+summary(mod.null)
+```
+
+# Combined Model
+```{r}
+mod.new <- glm(new_data$Group_binary~new_data$rs2476601+new_data$rs3087243+new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
+summary(mod.new)
+```
+
+# Accuracy
+```{r}
+predictions <- predict(mod.new, newdata = new_data, type = "response")
+predicted_labels <- ifelse(predictions > 0.5, 1, 0)
+accuracy <- mean(predicted_labels == new_data$Group_binary)
+accuracy
+
+roc_curve <- roc(new_data$Group_binary, predictions)
+plot(roc_curve, main = "ROC Curve", col = "blue", lwd = 2)
+
+auc_value <- auc(roc(new_data$Group_binary, predictions))
+auc_value
+```
+Performance of the model is mediocre.  
