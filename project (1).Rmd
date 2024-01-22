@@ -265,9 +265,9 @@ print(data.rs2476601.rep)
 ```{r, echo=FALSE}
 data.plot <- data.rs2476601.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
 
-data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
 
-rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("AA", "AG", "GG"))+
   xlab("data origin")+
@@ -299,9 +299,9 @@ print(data.rs3087243.rep)
 ```{r, echo=FALSE}
 data.plot <- data.rs3087243.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
 
-data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
 
-rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("AA", "AG", "GG"))+
   xlab("data origin")+
@@ -333,9 +333,9 @@ print(data.rs3807306.rep)
 ```{r, echo=FALSE}
 data.plot <- data.rs3807306.rep[, c("region", "GG_freq", "GT_freq", "TT_freq")]
 
-data.plot <- pivot_longer(data.plot, c("GG_freq", "GT_freq", "TT_freq"), values_to = "frequency", names_to = "allel")
+data.plot <- pivot_longer(data.plot, c("GG_freq", "GT_freq", "TT_freq"), values_to = "frequency", names_to = "genotype")
 
-rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("GG", "GT", "TT"))+
   xlab("data origin")+
@@ -369,9 +369,9 @@ print(data.rs1800629.rep)
 ```{r, echo=FALSE}
 data.plot <- data.rs1800629.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
 
-data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "allel")
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
 
-rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("AA", "AG", "GG"))+
   xlab("data origin")+
@@ -403,9 +403,9 @@ print(data.rs1799724.rep)
 ```{r, echo=FALSE}
 data.plot <- data.rs1799724.rep[, c("region", "CC_freq", "CT_freq", "TT_freq")]
 
-data.plot <- pivot_longer(data.plot, c("CC_freq", "CT_freq", "TT_freq"), values_to = "frequency", names_to = "allel")
+data.plot <- pivot_longer(data.plot, c("CC_freq", "CT_freq", "TT_freq"), values_to = "frequency", names_to = "genotype")
 
-rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
+rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("CC", "CT", "TT"))+
   xlab("data origin")+
