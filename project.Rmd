@@ -15,6 +15,7 @@ library(patchwork)
 library(tidyr)
 library(glmnet)
 library(pROC)
+library(DescTools)
 ```
 
 # Loading the data
@@ -70,6 +71,7 @@ p5 <- ggplot(data, aes(x=rs1799724)) +
 
 p00+ p0 + p1 + p2 + p3 + p4 + p5 + plot_annotation(title = "Distributions of each column in the dataset")
 ```
+
 # Distributions of data among CFS and control groups
 
 ```{r group_hist, echo = FALSE}
@@ -260,6 +262,21 @@ GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
 data.rs2476601.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
 print(data.rs2476601.rep)
 ```
+
+```{r, echo=FALSE}
+data.plot <- data.rs2476601.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
+
+rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs2476601.plot
+```
+
 # rs3087243
 
 The information about this genetic marker can be found here: 
@@ -278,6 +295,20 @@ AG_freq <- c(0.420, 0.307, 0.496,  0.379, 0.511, 0.468 )
 
 data.rs3087243.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
 print(data.rs3087243.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs3087243.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
+
+rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3087243.plot
 ```
 
 # rs3807306
@@ -300,6 +331,22 @@ data.rs3807306.rep <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_fr
 print(data.rs3807306.rep)
 ```
 
+```{r, echo=FALSE}
+data.plot <- data.rs3807306.rep[, c("region", "GG_freq", "GT_freq", "TT_freq")]
+
+data.plot <- pivot_longer(data.plot, c("GG_freq", "GT_freq", "TT_freq"), values_to = "frequency", names_to = "genotype")
+
+rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("GG", "GT", "TT"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs3807306.plot
+```
+
+
+
 # rs1800629
 
 The information about this genetic marker can be found here: 
@@ -320,6 +367,20 @@ data.rs1800629.rep <- data.frame(region, G_freq, A_freq, GG_freq, AA_freq, AG_fr
 print(data.rs1800629.rep)
 ```
 
+```{r, echo=FALSE}
+data.plot <- data.rs1800629.rep[, c("region", "AA_freq", "AG_freq", "GG_freq")]
+
+data.plot <- pivot_longer(data.plot, c("AA_freq", "AG_freq", "GG_freq"), values_to = "frequency", names_to = "genotype")
+
+rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("AA", "AG", "GG"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1800629.plot
+```
+
 # rs1799724
 
 The information about this genetic marker can be found here: 
@@ -338,6 +399,20 @@ TT_freq <- c(0.012 , 0.002 , 0.023 ,  0.020 , 0.010 , 0.012 )
 
 data.rs1799724.rep <- data.frame(region, C_freq, T_freq, CC_freq, CT_freq, TT_freq)
 print(data.rs1799724.rep)
+```
+
+```{r, echo=FALSE}
+data.plot <- data.rs1799724.rep[, c("region", "CC_freq", "CT_freq", "TT_freq")]
+
+data.plot <- pivot_longer(data.plot, c("CC_freq", "CT_freq", "TT_freq"), values_to = "frequency", names_to = "genotype")
+
+rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=genotype)) +
+  geom_bar(stat="identity", width=0.7)+
+  scale_fill_discrete(labels=c("CC", "CT", "TT"))+
+  xlab("data origin")+
+  theme_minimal()
+  
+rs1799724.plot
 ```
 
 # Estimated distributions of genetic markers in healthy patients
@@ -384,7 +459,7 @@ data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", nam
 rs2476601.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("A", "G"))+
-  ylab("data origin")+
+  xlab("data origin")+
   theme_minimal()
 rs2476601.plot
 ```
@@ -421,7 +496,7 @@ data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", nam
 rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("A", "G"))+
-  ylab("data origin")+
+  xlab("data origin")+
   theme_minimal()
   
 rs3087243.plot
@@ -457,7 +532,7 @@ data.plot <- pivot_longer(data.plot, T_freq:G_freq, values_to = "frequency", nam
 rs3807306.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("T", "G"))+
-  ylab("data origin")+
+  xlab("data origin")+
   theme_minimal()
   
 rs3807306.plot
@@ -493,7 +568,7 @@ data.plot <- pivot_longer(data.plot, A_freq:G_freq, values_to = "frequency", nam
 rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("A", "G"))+
-  ylab("data origin")+
+  xlab("data origin")+
   theme_minimal()
   
 rs1800629.plot
@@ -529,7 +604,7 @@ data.plot <- pivot_longer(data.plot, T_freq:C_freq, values_to = "frequency", nam
 rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel)) +
   geom_bar(stat="identity", width=0.7)+
   scale_fill_discrete(labels=c("C", "T"))+
-  ylab("data origin")+
+  xlab("data origin")+
   theme_minimal()
   
 rs1799724.plot
@@ -677,10 +752,10 @@ p.values <- c()
 
 contingency_table <- table(data$Group, data$rs2476601)
 contingency_table
-fisher_test_result <- fisher.test(contingency_table)
-fisher_test_result
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
 
-p.values <- c(p.values,fisher_test_result$p.value)
+p.values <- c(p.values,chi_square_result$p.value)
 ```
 
 # rs3087243
@@ -707,10 +782,10 @@ p.values <- c(p.values,chi_square_result$p.value)
 ```{r}
 contingency_table <- table(data$Group, data$rs1800629)
 contingency_table
-fisher_test_result <- fisher.test(contingency_table)
-fisher_test_result
+chi_square_result <- chisq.test(contingency_table)
+chi_square_result
 
-p.values <- c(p.values,fisher_test_result$p.value)
+p.values <- c(p.values,chi_square_result$p.value)
 ```
 
 # rs1799724
@@ -731,11 +806,9 @@ adjusted_p_values
 
 
 gene_names <- c("rs2476601", "rs3087243", "rs3807306", "rs1800629", "rs1799724")
-tests_used <- c("Fisher's Exact Test", "Chi-squared Test", "Chi-squared Test", "Fisher's Exact Test", "Chi-squared Test")
 
 result_table <- data.frame(
   Genetic_Marker = gene_names,
-  Test_Used = tests_used,
   P_Value = p.values,
   Adjusted_P_Value = adjusted_p_values
 )
