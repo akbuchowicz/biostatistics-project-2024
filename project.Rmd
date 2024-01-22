@@ -241,7 +241,7 @@ The information about the genetic markers will be presented using the VCF format
 * `ALT` - alternative base(s)
 
 
-## rs2476601
+# rs2476601
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=1:113834446-113835446;v=rs2476601;vdb=variation;vf=166892
@@ -260,7 +260,7 @@ GG_freq <- c(0.946 , 0.994 , 0.931 ,  1.000, 0.815 , 0.973)
 data.rs2476601.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_freq)
 print(data.rs2476601.rep)
 ```
-## rs3087243
+# rs3087243
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
@@ -280,7 +280,7 @@ data.rs3087243.rep <- data.frame(region, A_freq, G_freq, AA_freq, AG_freq, GG_fr
 print(data.rs3087243.rep)
 ```
 
-## rs3807306
+# rs3807306
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=2:203873696-203874696;v=rs3087243;vdb=variation;vf=89583355
@@ -300,7 +300,7 @@ data.rs3807306.rep <- data.frame(region, G_freq, T_freq, GG_freq, GT_freq, TT_fr
 print(data.rs3807306.rep)
 ```
 
-## rs1800629
+# rs1800629
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Population?db=core;r=6:31574754-31575754;v=rs1800629;vdb=variation;vf=406243482
@@ -320,7 +320,7 @@ data.rs1800629.rep <- data.frame(region, G_freq, A_freq, GG_freq, AA_freq, AG_fr
 print(data.rs1800629.rep)
 ```
 
-## rs1799724
+# rs1799724
 
 The information about this genetic marker can be found here: 
 https://www.ensembl.org/Homo_sapiens/Variation/Explore?db=core;r=6:31574205-31575205;v=rs1799724;vdb=variation;vf=406243312
@@ -357,7 +357,7 @@ dim(data_HC)
 
 Now we are going to create new variable for each allele and calculate distribution of them. Then we compare results with distributions from repository.
 
-## rs2476601
+# rs2476601
 ```{r}
 data.rs2476601 <- data_HC$rs2476601
 unique(data.rs2476601)
@@ -390,7 +390,7 @@ rs2476601.plot
 ```
 
 
-## rs3087243
+# rs3087243
 
 ```{r}
 data.rs3087243 <- data_HC$rs3087243
@@ -427,7 +427,7 @@ rs3087243.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs3087243.plot
 ```
 
-## rs3807306
+# rs3807306
 
 ```{r}
 data.rs3807306 <- data_HC$rs3807306
@@ -464,7 +464,7 @@ rs3807306.plot
 ```
 
 
-## rs1800629
+# rs1800629
 ```{r}
 data.rs1800629 <- data_HC$rs1800629
 unique(data.rs1800629)
@@ -499,7 +499,7 @@ rs1800629.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs1800629.plot
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
 data.rs1799724 <- data_HC$rs1799724
 unique(data.rs1799724)
@@ -535,6 +535,138 @@ rs1799724.plot <- ggplot(data=data.plot, aes(x=region, y=frequency, fill=allel))
 rs1799724.plot
 ```
 
+# Genotype distribution for HC group
+From previous slide we know amount of each genotype (got it from table function). Now
+we are going to calculate frequencies of each genotype and then compare it with expectations from
+the Hardy-Weinberg Equilibrium using chi-square test.
+
+## rs2476601
+
+```{r}
+freq.rs2476601 <- prop.table(table.rs2476601)
+freq.rs2476601["AA"] <- 0.
+
+freq.rs2476601
+theo.prob.rs2476601 <- c(proportion.allelesA.rs2476601^2, 2*proportion.allelesA.rs2476601*(1-proportion.allelesA.rs2476601),(1-proportion.allelesA.rs2476601)^2)
+theo.prob.rs2476601 <- theo.prob.rs2476601[c(2,3,1)] # sorting
+theo.prob.rs2476601
+
+table.rs2476601["AA"] <- 0.
+chisq.test(x=table.rs2476601, p=theo.prob.rs2476601)
+```
+
+## rs3087243
+```{r}
+freq.rs3087243 <- prop.table(table.rs3087243)
+freq.rs3087243
+theo.prob.rs3087243 <- c(proportion.allelesA.rs3087243^2, 2*proportion.allelesA.rs3087243*(1-proportion.allelesA.rs3087243),(1-proportion.allelesA.rs3087243)^2)
+theo.prob.rs3087243
+chisq.test(x=table.rs3087243, p=theo.prob.rs3087243)
+```
+
+## rs3807306
+```{r}
+freq.rs3807306 <- prop.table(table.rs3807306)
+freq.rs3807306
+theo.prob.rs3807306 <- c(proportion.allelesT.rs3807306^2, 2*proportion.allelesT.rs3807306*(1-proportion.allelesT.rs3807306),(1-proportion.allelesT.rs3807306)^2)
+theo.prob.rs3807306
+chisq.test(x=table.rs3807306, p=theo.prob.rs3807306)
+```
+
+## rs1800629
+```{r}
+freq.rs1800629 <- prop.table(table.rs1800629)
+freq.rs1800629
+theo.prob.rs1800629 <- c(proportion.allelesA.rs1800629^2, 2*proportion.allelesA.rs1800629*(1-proportion.allelesA.rs1800629),(1-proportion.allelesA.rs1800629)^2)
+theo.prob.rs1800629
+chisq.test(x=table.rs1800629, p=theo.prob.rs1800629)
+```
+
+## rs1799724
+```{r}
+freq.rs1799724 <- prop.table(table.rs1799724)
+freq.rs1799724
+theo.prob.rs1799724 <- c(proportion.allelesT.rs1799724^2, 2*proportion.allelesT.rs1799724*(1-proportion.allelesT.rs1799724),(1-proportion.allelesT.rs1799724)^2)
+theo.prob.rs1799724 <- theo.prob.rs1799724[c(3,2,1)] # sorting
+theo.prob.rs1799724
+chisq.test(x=table.rs1799724, p=theo.prob.rs1799724)
+```
+
+# Genotype distribution for CFS group
+
+In the beginning we delete na values from CFS group.
+```{r}
+data_cfs <- na.omit(data_cfs)
+```
+
+## rs2476601
+
+```{r}
+freq.rs2476601.cfs <- table(data_cfs$rs2476601) / sum(table(data_cfs$rs2476601))
+freq.rs2476601.cfs
+
+proportion.allelesA.rs2476601.cfs <- sum(data_cfs$rs2476601=='AA' | data_cfs$rs2476601=='AG') / (2 * sum(table(data_cfs$rs247660)))
+
+theo.prob.rs2476601.cfs <- c(proportion.allelesA.rs2476601.cfs^2, 2*proportion.allelesA.rs2476601.cfs*(1-proportion.allelesA.rs2476601.cfs),
+                             (1-proportion.allelesA.rs2476601.cfs)^2)
+theo.prob.rs2476601.cfs
+chisq.test(x=table(data_cfs$rs2476601), p=theo.prob.rs2476601.cfs)
+```
+
+## rs3087243
+```{r}
+freq.rs3087243.cfs <- table(data_cfs$rs3087243) / sum(table(data_cfs$rs3087243))
+freq.rs3087243.cfs
+
+proportion.allelesA.rs3087243.cfs <- sum(data_cfs$rs3087243=='AA' | data_cfs$rs3087243=='AG') / (2 * sum(table(data_cfs$rs247660)))
+
+theo.prob.rs3087243.cfs <- c(proportion.allelesA.rs3087243.cfs^2, 2*proportion.allelesA.rs3087243.cfs*(1-proportion.allelesA.rs3087243.cfs),
+                             (1-proportion.allelesA.rs3087243.cfs)^2)
+theo.prob.rs3087243.cfs <- theo.prob.rs3087243.cfs[c(1,3,2)] # soriting
+theo.prob.rs3087243.cfs
+chisq.test(x=table(data_cfs$rs3087243), p=theo.prob.rs3087243.cfs)
+```
+
+## rs3807306
+```{r}
+freq.rs3807306.cfs <- table(data_cfs$rs3807306) / sum(table(data_cfs$rs3807306))
+freq.rs3807306.cfs
+
+proportion.allelesT.rs3807306.cfs <- sum(data_cfs$rs3807306=='GT' | data_cfs$rs3807306=='TT') / (2 * sum(table(data_cfs$rs3807306)))
+
+theo.prob.rs3807306.cfs <- c(proportion.allelesT.rs3807306.cfs^2, 2*proportion.allelesT.rs3807306.cfs*(1-proportion.allelesT.rs3807306.cfs),
+                             (1-proportion.allelesT.rs3807306.cfs)^2)
+theo.prob.rs3807306.cfs
+chisq.test(x=table(data_cfs$rs3807306), p=theo.prob.rs3807306.cfs)
+```
+
+## rs1800629
+```{r}
+freq.rs1800629.cfs <- table(data_cfs$rs1800629) / sum(table(data_cfs$rs1800629))
+freq.rs1800629.cfs
+
+proportion.allelesA.rs1800629.cfs <- sum(data_cfs$rs1800629=='AA' | data_cfs$rs1800629=='AG') / (2 * sum(table(data_cfs$rs1800629)))
+
+theo.prob.rs1800629.cfs <- c(proportion.allelesA.rs1800629.cfs^2, 2*proportion.allelesA.rs1800629.cfs*(1-proportion.allelesA.rs1800629.cfs),
+                             (1-proportion.allelesA.rs1800629.cfs)^2)
+theo.prob.rs1800629.cfs
+chisq.test(x=table(data_cfs$rs1800629), p=theo.prob.rs1800629.cfs)
+```
+
+## rs1799724
+```{r}
+freq.rs1799724.cfs <- table(data_cfs$rs1799724) / sum(table(data_cfs$rs1799724))
+freq.rs1799724.cfs
+
+proportion.allelesT.rs1799724.cfs <- sum(data_cfs$rs1799724=='CT' | data_cfs$rs1799724=='TT') / (2 * sum(table(data_cfs$rs1799724)))
+
+theo.prob.rs1799724.cfs <- c(proportion.allelesT.rs1799724.cfs^2, 2*proportion.allelesT.rs1799724.cfs*(1-proportion.allelesT.rs1799724.cfs),
+                             (1-proportion.allelesT.rs1799724.cfs)^2)
+theo.prob.rs1799724.cfs <- theo.prob.rs1799724.cfs[c(3,2,1)]
+theo.prob.rs1799724.cfs
+chisq.test(x=table(data_cfs$rs1799724), p=theo.prob.rs1799724.cfs)
+```
+
 # Genotype Distribution Between CFS and HC
 
 To test if the genotype distribution between CFS and HC is significantly different we used the Chi-Squared test and the Fisher's exact test. According to https://www.ccjm.org/content/84/9_suppl_2/e20 if substantial (above 20%) of expected cell counts is less than 5, the Fisher's exact test should be used.
@@ -551,7 +683,7 @@ fisher_test_result
 p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
-## rs3087243
+# rs3087243
 ```{r}
 contingency_table <- table(data$Group, data$rs3087243)
 contingency_table
@@ -561,7 +693,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## rs3807306
+# rs3807306
 ```{r}
 contingency_table <- table(data$Group, data$rs3807306)
 contingency_table
@@ -571,7 +703,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## rs1800629
+# rs1800629
 ```{r}
 contingency_table <- table(data$Group, data$rs1800629)
 contingency_table
@@ -581,7 +713,7 @@ fisher_test_result
 p.values <- c(p.values,fisher_test_result$p.value)
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
 contingency_table <- table(data$Group, data$rs1799724)
 contingency_table
@@ -591,7 +723,7 @@ chi_square_result
 p.values <- c(p.values,chi_square_result$p.value)
 ```
 
-## Bonferroni's Correction
+# Bonferroni's Correction
 Now we can apply the Bonferroni's correction to adjust the p-values.
 ```{r}
 adjusted_p_values <- p.adjust(p.values, method = "bonferroni")
@@ -610,7 +742,7 @@ result_table <- data.frame(
 
 result_table
 ```
-As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype deistributions between the groups.
+As we can see, there is a significant difference in genotype distribution between CFS and HC for rs3087243 after Bonferroni correction. For all other genetic markers there are no significant differences in genotype distributions between the groups.
 
 # Creating models
 
@@ -621,53 +753,58 @@ Next, we created models using "Group" as the outcome variable and adjusting for 
 new_data <- na.omit(data)
 new_data$Group_binary <- as.factor(ifelse(new_data$Group == "CFS", 1, 0))
 
+new_data$rs2476601 <- ifelse(new_data$rs2476601 == "GG", 2, ifelse(new_data$rs2476601=='AG',1,0))
 mod.rs2476601 <- glm(new_data$Group_binary~new_data$rs2476601+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs2476601)
 ```
 
-## rs3087243
+# rs3087243
 ```{r}
+new_data$rs3087243 <- ifelse(new_data$rs3087243 == "GG", 2, ifelse(new_data$rs3087243=='AG',1,0))
 mod.rs3087243 <- glm(new_data$Group_binary~new_data$rs3087243+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs3087243)
 ```
 
-## rs3807306
+# rs3807306
 ```{r}
+new_data$rs3807306 <- ifelse(new_data$rs3807306 == "GG", 2, ifelse(new_data$rs3807306=='GT',1,0))
 mod.rs3807306 <- glm(new_data$Group_binary~new_data$rs3807306+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs3807306)
 ```
 
-## rs1800629
+# rs1800629
 ```{r}
+new_data$rs1800629 <- ifelse(new_data$rs1800629 == "GG", 2, ifelse(new_data$rs1800629=='AG',1,0))
 mod.rs1800629 <- glm(new_data$Group_binary~new_data$rs1800629+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs1800629)
 ```
 
-## rs1799724
+# rs1799724
 ```{r}
+new_data$rs1799724 <- ifelse(new_data$rs1799724 == "CC", 2, ifelse(new_data$rs1799724=='CT',1,0))
 mod.rs1799724 <- glm(new_data$Group_binary~new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
 summary(mod.rs1799724)
 ```
 
-## Full Model
+# Full Model
 ```{r}
 mod.full <- glm(Group_binary~., family=binomial(link='probit'),data=subset(new_data, select = -Group))
 summary(mod.full)
 ```
 
-## Empty Model
+# Empty Model
 ```{r}
 mod.null <- glm(Group_binary~1, family=binomial(link='probit'),data=subset(new_data, select = -Group))
 summary(mod.null)
 ```
 
-## Combined Model
+# Combined Model
 ```{r}
-mod.new <- glm(new_data$Group_binary~new_data$rs3087243+new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
+mod.new <- glm(new_data$Group_binary~new_data$rs2476601+new_data$rs3087243+new_data$rs1799724+new_data$Gender, family=binomial(link='probit'))
 summary(mod.new)
 ```
 
-## Accuracy
+# Accuracy
 ```{r}
 predictions <- predict(mod.new, newdata = new_data, type = "response")
 predicted_labels <- ifelse(predictions > 0.5, 1, 0)
